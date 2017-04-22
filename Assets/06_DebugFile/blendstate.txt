@@ -1,0 +1,332 @@
+bool___AlphaToCoverageEnable	0
+bool__IndependentBlendEnable	1
+bool______________BlendEnable	1
+D3D11_BLEND_________SrcBlend	2
+D3D11_BLEND________DestBlend	6
+D3D11_BLEND_______OP_BlendOp	1
+D3D11_BLEND____SrcBlendAlpha	1
+D3D11_BLEND___DestBlendAlpha	2
+D3D12_BLEND_OP__BlendOpAlpha	3
+UINT8__RenderTargetWriteMask	15
+/*
+	계산식
+
+	원래색 * SrcBlend  +  다음색 * DestBlend  = Color
+
+	ex)
+	  ONE , ONE , ADD
+	 	= 원래색 * (1,1,1,1) + 다음색( 1,1,1,1,) =  원래색 + 다음색
+
+	INV_SRC_ALPHA(PS알파값보수) , SRC_ALPHA(PS알파값)  , ADD 
+		= 원래색  * (1 - 알파값) + 다음색 * 알파값
+ 	
+*/
+
+D3D11_BLENDㅕ
+	D3D11_BLEND_ZERO		= 1,	// 검정색						//  (0, 0, 0, 0)
+	D3D11_BLEND_ONE			= 2,	// 흰색						//  (1, 1, 1, 1)		
+
+	D3D11_BLEND_SRC_COLOR		= 3,	// PS Output 색 (R,G,B,A)				//        RGBA(ps)		//Alpah들어가면안됌
+	D3D11_BLEND_INV_SRC_COLOR	= 4,	// PS Output 보색 (1-R, 1-G, 1-B, 1-A)			//  1  - RGBA(ps)
+
+	D3D11_BLEND_SRC_ALPHA		= 5,	// PS 출력 알파값					//         A(s)
+	D3D11_BLEND_INV_SRC_ALPHA	= 6,	// PS 출력 알파값의 보수				//  1  - A(ps)	
+
+	D3D11_BLEND_DEST_ALPHA		= 7,	// RenderTarget Alpha				//         A(d)
+	D3D11_BLEND_INV_DEST_ALPHA	= 8,	// RenderTarget Alpha의 보수				// 1  -  A(d)
+
+	D3D11_BLEND_DEST_COLOR		= 9,	// RenderTarget 색상					//        RGBA(d)	
+	D3D11_BLEND_INV_DEST_COLOR	= 10,	// RenderTarget의 보색				// 1  - RGBA(d)
+ㄴ
+	D3D11_BLEND_SRC_ALPHA_SAT	= 11,	// PS 출력 알파값 (1보다 작도록 클램핑)			//       A(ps) 
+
+	D3D11_BLEND_BLEND_FACTOR	= 14,	// 블랜딩 팩터, OMSetBlendState()함수에서 설정하는 색상값 
+	D3D11_BLEND_INV_BLEND_FACTOR	= 15,	// 블랜딩 팩터의 보색
+
+	D3D11_BLEND_SRC1_COLOR		= 16,	// PS 출력 색상	(R,G,B)
+	D3D11_BLEND_INV_SRC1_COLOR	= 17,	// PS 출력 색상의 보색 ( 1-R, 1-G, 1-B, 1-A)
+
+	D3D11_BLEND_SRC1_ALPHA		= 18,	// PS 출력 알파값
+	D3D11_BLEND_INV_SRC1_ALPHA	= 19	// PS 출력 알파값의 보수 ( 1- A)
+
+//
+D3D11_BLEND_OP
+	D3D11_BLEND_OP_ADD		= 1,
+	D3D11_BLEND_OP_SUBTRACT		= 2,
+	D3D11_BLEND_OP_REV_SUBTRACT	= 3,
+	D3D11_BLEND_OP_MIN		= 4,
+	D3D11_BLEND_OP_MAX		= 5
+
+D3D11_RENDER_TARGET_BLEND_DESC
+    BOOL 			BlendEnable;		= 1;
+    D3D11_BLEND 		SrcBlend;			= 2;
+    D3D11_BLEND 		DestBlend;		= 3;
+    D3D11_BLEND_		OP BlendOp;		= 4;
+    D3D11_BLEND 		SrcBlendAlpha;		= 5;
+    D3D11_BLEND 		DestBlendAlpha;		= 6;
+    D3D11_BLEND_OP 	BlendOpAlpha;		= 7;
+    UINT8 			RenderTargetWriteMask;	= 15;
+D3D11_RENDER_TARGET_BLEND_DESC;
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+
+bool___AlphaToCoverageEnable	 // 다중 샘플링을 위해 Alpha-to-coverage를 사용하는가
+bool__IndependentBlendEnable	 // 여러 렌더 타게셍서 독립적인 방법으로 블랜딩을 사용하는가
+bool______________BlendEnabl	 // 각 렌더 타겟에 대한 블렌딩, 출력병합단계에 8개까지의 랜더타겟을 설정
+
+D3D11_BLEND_________SrcBlend	 // RGB 색상 블랜드 연산의 첫 번째 피연산자, 사전 블랜드 연산 포함 가능 - 그릴려는 색
+D3D11_BLEND________DestBlend	 // RGB 색상 블랜드 연산의 두 번째 피연산자, 사전 블랜드 연산 포함 가능 - 이미 그려진색
+D3D11_BLEND_______OP_BlendOp	 // RGB 색상 블랜드 연산자(RGB 색상을 결합하는 방법)
+
+D3D11_BLEND____SrcBlendAlpha	 // 알파 블랜드 연산의 첫 번째 피연산자, 사전 블랜드 연산 포함 가능
+D3D11_BLEND___DestBlendAlpha	 // 알파 블랜드 연산의 첫 번째 피연산자, 사전 블랜드 연산 포함 가능
+D3D12_BLEND_OP__BlendOpAlpha	 // 알파 블랜드 연산자(알파값을 결합하는 방법)
+
+UINT8__RenderTargetWriteMask	 // 블래ㄴ드 타겟에 적용할 매스크(8비트), Oring
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+
+
+//-------------------------------------------- 
+			부쉬
+
+bool___AlphaToCoverageEnable	0
+bool__IndependentBlendEnable	0
+bool______________BlendEnable	1
+D3D11_BLEND_________SrcBlend	2
+D3D11_BLEND________DestBlend	1
+D3D11_BLEND_______OP_BlendOp	1
+D3D11_BLEND____SrcBlendAlpha	3
+D3D11_BLEND___DestBlendAlpha	2
+D3D12_BLEND_OP__BlendOpAlpha	3
+UINT8__RenderTargetWriteMask	15
+			부쉬
+
+//-------------------------------------------- 
+
+
+
+//-------------------------------------------- 
+		아예 투명큐브
+
+bool___AlphaToCoverageEnable	0
+bool__IndependentBlendEnable	1
+bool______________BlendEnable	1
+D3D11_BLEND_________SrcBlend	2
+D3D11_BLEND________DestBlend	2
+D3D11_BLEND_______OP_BlendOp	5
+D3D11_BLEND____SrcBlendAlpha	1
+D3D11_BLEND___DestBlendAlpha	2
+D3D12_BLEND_OP__BlendOpAlpha	3
+UINT8__RenderTargetWriteMask	2
+		아예 투명큐브
+
+//-------------------------------------------- 
+
+
+//-------------------------------------------- 
+			UI
+
+bool___AlphaToCoverageEnable	1
+bool__IndependentBlendEnable	0
+bool______________BlendEnable	1
+D3D11_BLEND_________SrcBlend	2
+D3D11_BLEND________DestBlend	2
+D3D11_BLEND_______OP_BlendOp	4
+D3D11_BLEND____SrcBlendAlpha	2
+D3D11_BLEND___DestBlendAlpha	1
+D3D12_BLEND_OP__BlendOpAlpha	1
+UINT8__RenderTargetWriteMask	15
+			UI
+
+//-------------------------------------------- 
+
+
+
+//-------------------------------------------- 
+
+bool___AlphaToCoverageEnable	0
+bool__IndependentBlendEnable	0
+bool______________BlendEnable	1
+D3D11_BLEND_________SrcBlend	1
+D3D11_BLEND________DestBlend	2
+D3D11_BLEND_______OP_BlendOp	3
+D3D11_BLEND____SrcBlendAlpha	1
+D3D11_BLEND___DestBlendAlpha	2
+D3D12_BLEND_OP__BlendOpAlpha	2
+UINT8__RenderTargetWriteMask	15
+			전방투시
+
+//-------------------------------------------- 
+
+
+//-------------------------------------------- 
+bool___AlphaToCoverageEnable	1
+bool__IndependentBlendEnable	0
+bool______________BlendEnable	1
+D3D11_BLEND_________SrcBlend	1
+D3D11_BLEND________DestBlend	2
+D3D11_BLEND_______OP_BlendOp	2
+D3D11_BLEND____SrcBlendAlpha	14
+D3D11_BLEND___DestBlendAlpha	1
+D3D12_BLEND_OP__BlendOpAlpha	1
+UINT8__RenderTargetWriteMask	15
+			목표물을 포착했다
+//-------------------------------------------- 
+
+//-------------------------------------------- 
+bool___AlphaToCoverageEnable	1
+bool__IndependentBlendEnable	0
+bool______________BlendEnable	0
+D3D11_BLEND_________SrcBlend	2
+D3D11_BLEND________DestBlend	2
+D3D11_BLEND_______OP_BlendOp	1
+D3D11_BLEND____SrcBlendAlpha	2
+D3D11_BLEND___DestBlendAlpha	1
+D3D12_BLEND_OP__BlendOpAlpha	1
+UINT8__RenderTargetWriteMask	15
+	Default UI
+//-------------------------------------------- 
+
+
+//-------------------------------------------- 
+bool___AlphaToCoverageEnable	0
+bool__IndependentBlendEnable	0
+bool______________BlendEnable	1
+D3D11_BLEND_________SrcBlend	5
+D3D11_BLEND________DestBlend	2
+D3D11_BLEND_______OP_BlendOp	1
+D3D11_BLEND____SrcBlendAlpha	1
+D3D11_BLEND___DestBlendAlpha	1
+D3D12_BLEND_OP__BlendOpAlpha	1
+UINT8__RenderTargetWriteMask	15
+	Particle 
+//-------------------------------------------- 
+
+//-------------------------------------------- 
+bool___AlphaToCoverageEnable	1
+bool__IndependentBlendEnable	0
+bool______________BlendEnable	0
+D3D11_BLEND_________SrcBlend	5
+D3D11_BLEND________DestBlend	6
+D3D11_BLEND_______OP_BlendOp	1
+D3D11_BLEND____SrcBlendAlpha	5
+D3D11_BLEND___DestBlendAlpha	6
+D3D12_BLEND_OP__BlendOpAlpha	1
+UINT8__RenderTargetWriteMask	15
+	Bullboard
+//-------------------------------------------- 
+
+
+
+//-------------------------------------------- 
+bool___AlphaToCoverageEnable	1
+bool__IndependentBlendEnable	0
+bool______________BlendEnable	1
+D3D11_BLEND_________SrcBlend	2
+D3D11_BLEND________DestBlend	2
+D3D11_BLEND_______OP_BlendOp	1
+D3D11_BLEND____SrcBlendAlpha	2
+D3D11_BLEND___DestBlendAlpha	1
+D3D12_BLEND_OP__BlendOpAlpha	1
+UINT8__RenderTargetWriteMask	15
+	TerrainWater
+//-------------------------------------------- 
+
+//-------------------------------------------- 
+bool___AlphaToCoverageEnable	1
+bool__IndependentBlendEnable	0
+bool______________BlendEnable	0
+D3D11_BLEND_________SrcBlend	5
+D3D11_BLEND________DestBlend	6
+D3D11_BLEND_______OP_BlendOp	1
+D3D11_BLEND____SrcBlendAlpha	5
+D3D11_BLEND___DestBlendAlpha	6
+D3D12_BLEND_OP__BlendOpAlpha	1
+UINT8__RenderTargetWriteMask	15
+	FireParticle
+//-------------------------------------------- 
+
+-------------------------------------------- "WaterFall_Floor"
+bool___AlphaToCoverageEnable	0
+bool__IndependentBlendEnable	1
+bool______________BlendEnable	1
+D3D11_BLEND_________SrcBlend	1
+D3D11_BLEND________DestBlend	2
+D3D11_BLEND_______OP_BlendOp	5
+D3D11_BLEND____SrcBlendAlpha	2
+D3D11_BLEND___DestBlendAlpha	2
+D3D12_BLEND_OP__BlendOpAlpha	3
+UINT8__RenderTargetWriteMask	14
+-------------------------------------------- "WaterFall_Floor"
+
+-------------------------------------------- "BillBoardAlpha"
+bool___AlphaToCoverageEnable	1
+bool__IndependentBlendEnable	0
+bool______________BlendEnable	1
+D3D11_BLEND_________SrcBlend	2
+D3D11_BLEND________DestBlend	2
+D3D11_BLEND_______OP_BlendOp	4
+D3D11_BLEND____SrcBlendAlpha	2
+D3D11_BLEND___DestBlendAlpha	1
+D3D12_BLEND_OP__BlendOpAlpha	1
+UINT8__RenderTargetWriteMask	15
+-------------------------------------------- "BillBoardAlpha"
+
+-------------------------------------------- Gauge
+bool___AlphaToCoverageEnable	1
+bool__IndependentBlendEnable	0
+bool______________BlendEnable	0
+D3D11_BLEND_________SrcBlend	2
+D3D11_BLEND________DestBlend	2
+D3D11_BLEND_______OP_BlendOp	1
+D3D11_BLEND____SrcBlendAlpha	2
+D3D11_BLEND___DestBlendAlpha	2
+D3D12_BLEND_OP__BlendOpAlpha	1
+UINT8__RenderTargetWriteMask	15
+-------------------------------------------- Gauge
+
+-------------------------------------------- BillBoardSprite
+bool___AlphaToCoverageEnable	0
+bool__IndependentBlendEnable	1
+bool______________BlendEnable	1
+D3D11_BLEND_________SrcBlend	2
+D3D11_BLEND________DestBlend	2
+D3D11_BLEND_______OP_BlendOp	4
+D3D11_BLEND____SrcBlendAlpha	2
+D3D11_BLEND___DestBlendAlpha	1
+D3D12_BLEND_OP__BlendOpAlpha	3
+UINT8__RenderTargetWriteMask	15
+--------------------------------------------BillBoardSprite
+
+--------------------------------------------ParticleBlend
+bool___AlphaToCoverageEnable	0
+bool__IndependentBlendEnable	0
+bool______________BlendEnable	1
+D3D11_BLEND_________SrcBlend	5
+D3D11_BLEND________DestBlend	6
+D3D11_BLEND_______OP_BlendOp	1
+D3D11_BLEND____SrcBlendAlpha	1
+D3D11_BLEND___DestBlendAlpha	1
+D3D12_BLEND_OP__BlendOpAlpha	1
+UINT8__RenderTargetWriteMask	15
+--------------------------------------------ParticleBlend
+//------------------------------------------------- 뭐가보이는 블랜딩
+bool___AlphaToCoverageEnable	0
+bool__IndependentBlendEnable	1
+bool______________BlendEnable	1
+D3D11_BLEND_________SrcBlend	2
+D3D11_BLEND________DestBlend	5  or 6
+D3D11_BLEND_______OP_BlendOp	1
+D3D11_BLEND____SrcBlendAlpha	1
+D3D11_BLEND___DestBlendAlpha	2
+D3D12_BLEND_OP__BlendOpAlpha	3
+UINT8__RenderTargetWriteMask	15
+//--------------------------------------------------
+		
+
+
+
+ShadowMapShader.cpp 	 43
+Warp3DOtherPlayerShader.cpp 283
+TerrainWater.pcpp
